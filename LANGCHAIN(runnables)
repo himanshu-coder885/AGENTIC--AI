@@ -1,0 +1,101 @@
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import PromptTemplate
+from langchain_huggingface import Chathuggingface, HuggingfaceEndPoint
+
+from dotenv import load_dotenv
+from langchain_core.runnables import (
+    RunnableSequence,
+    RunnableParallel,
+    RunnablePassthrough,
+    RunnableBranch,
+    RunnableLambda
+)
+
+load_dotenv()
+
+prompt1 = PromptTemplate(
+    template = 'Write a detailed report on {topic}',
+    input_variable = ['topic']
+)
+
+prompt2 = PromptTemplate(
+    template= 'Summarize the folllowing text \n {text}'
+    input_variables= ['text']
+)
+
+model = HuggingfaceEndPoint()
+
+parser = StrOutputParser
+
+report_gen_chain = RunnableSequence(prompt1, model, parser)
+
+branch_chain = RunnableBranch(
+    (Lambda x: len(x.split())>500, RunnableSequence(prompt2, model, parser)),
+    RunnablePassthrough()
+)
+final_chain = RunnableSequence(report_gen_chain, branch_chain)
+
+print(final_chain.invoke({'topic': 'Russia vs Ukrain'}))
+
+from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from dotenv import load_dotenv
+from langchain_core.runnables import RunnableSequence
+
+load_dotenv()
+
+prompt = PromptTemplate(
+    template = ' Write a joke about {topic}',
+    input_variables=['topic']
+)
+
+model = ChatHuggingFace()
+
+parser = StrOutputParser()
+
+chain = RunnableSequence(prompt, model, parser)
+
+print(chain.invoke({'topic':'AI'}))
+
+from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from dotenv import load_dotenv
+from langchain_core.runnables import RunnableSequence
+
+load_dotenv()
+
+prompt1 = PromptTemplate(
+    template = 'Generate a tweet about {topic}',
+    input_variables = ['topic']
+)
+
+prompt2 = PromptTemplate(
+    template = 'Generate a Linkdin about {topic}',
+    input_variables = ['topic']
+)
+
+model = ChatHuggingFace()
+
+parser = StrOutputParser()
+
+parallel_chain = RunnableParallel({
+    'tweet' : RunnableSequence(prompt1, model, parser),
+    'Linkdin': RunnableSequence(prompt2,model, parser)
+
+})
+result = parallel_chain.invoke({'topic': AI})
+
+print(result)
+
+
+
+
+
+
+
+  
+
+
+
